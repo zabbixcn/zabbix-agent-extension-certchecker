@@ -7,26 +7,30 @@ import (
 	hierr "github.com/reconquest/hierr-go"
 )
 
-func nginxCheckReload() error {
+func nginxCheck() error {
 	var stderr bytes.Buffer
 
-	command := "nginx"
-
-	path, err := exec.LookPath(command)
+	cmd := exec.Command("/usr/bin/nginx", "-t")
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 	if err != nil {
-		return hierr.Errorf(err, "Don't find nginx bin")
+		return hierr.Errorf(stderr.String(), "check nginx configuration failed")
 	}
-	cmd := exec.Command(path, "-t")
+	return nil
+}
+func nginxReload() error {
+	var stderr bytes.Buffer
+
+	err := nginxCheck()
+	if err != nil {
+		return hierr.Errorf(stderr.String(), "check nginx configuration failed")
+	}
+
+	cmd := exec.Command("/usr/bin/nginx", "-s", "reload")
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return hierr.Errorf(stderr.String(), "Check nginx configuration failed")
-	}
-
-	cmd = exec.Command(path, "-s", "reload")
-	err = cmd.Run()
-	if err != nil {
-		return hierr.Errorf(stderr.String(), "Reload nginx failed")
+		return hierr.Errorf(stderr.String(), "reload nginx failed")
 	}
 	return nil
 }

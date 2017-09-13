@@ -18,6 +18,7 @@ func main() {
 
 Usage:
   zabbix-agent-extension-certchecker [options]
+  zabbix-agent-extension-certchecker [-h --help]
 
 Discovery options:
   --discovery               Discovery certificate file in directory.
@@ -27,13 +28,13 @@ Discovery options:
 
 Certificate check and update options:
   -c --certificate <file>   Certificate file
-  -k --private-key <file>   Private key fiel
+  -k --private-key <file>   Private key file
   -d --day <day>            Day expire [default: 30].
-  --zabbix-prefix <prefix>  Custom prefix for key [default: certificate].
   -z --zabbix <host>        Hostname or IP address of zabbix server
                              [default: 127.0.0.1].
   -p --port <port>          Port of zabbix server [default: 10051].
-  -m --mount-point <mount>  Mount point of secret backend
+  --zabbix-prefix <prefix>  Custom prefix for key [default: certificate].
+  -m --mountpoint <path>    Mount point of secret backend
                              [default: secret/prod/certs]
   -t --auth-token <token>   Access token for read secret backend
   -v --vault-address <uri>  Address of the Vault server
@@ -62,9 +63,16 @@ Misc options:
 		}
 		os.Exit(0)
 	}
-
-	certificate := args["--certificate"].(string)
-	privateKey := args["--private-key"].(string)
+	certificate, ok := args["--certificate"].(string)
+	if !ok {
+		fmt.Println("need setup --certificate <file>")
+		os.Exit(1)
+	}
+	privateKey, ok := args["--private-key"].(string)
+	if !ok {
+		fmt.Println("need setup --private-key <file>")
+		os.Exit(1)
+	}
 	day, err := strconv.Atoi(args["--day"].(string))
 	if err != nil {
 		fmt.Println(err.Error())
@@ -72,11 +80,18 @@ Misc options:
 	}
 
 	vaultAddress := args["--vault-address"].(string)
-	mountPoint := args["--mount-point"].(string)
-	tokenReadCert := args["--auth-token"].(string)
+	mountPoint := args["--mountpoint"].(string)
+	tokenReadCert, ok := args["--auth-token"].(string)
+	if !ok {
+		fmt.Println("need setup --auth-token <token>")
+		os.Exit(1)
+	}
 	suffixBac := args["--suffix-bac"].(string)
 
-	err = checkCertKeyFile(certificate, privateKey)
+	err = checkCertKeyFile(
+		certificate,
+		privateKey,
+	)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -125,22 +140,32 @@ Misc options:
 	)
 	sender.Send(packet)
 
-	if remaining < int64(day*24*3600) {
-
-		err := updateFromVault(
-			certificate,
-			privateKey,
-			suffixBac,
-			vaultAddress,
-			mountPoint,
-			tokenReadCert,
-			certData,
-		)
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
+	if remaining > int64(day*24*3600) {
+		fmt.Println("OK")
+		os.Exit(0)
 	}
 
+	certPemData, keyPemData, err := certGetFromVault(
+		vaultAddress,
+		mountPoint,
+		tokenReadCert,
+		certData,
+	)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	err = certUpdate(
+		certificate,
+		privateKey,
+		suffixBac,
+		certPemData,
+		keyPemData,
+		certData,
+	)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 	fmt.Println("OK")
 }

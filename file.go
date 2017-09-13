@@ -3,9 +3,31 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	hierr "github.com/reconquest/hierr-go"
 )
+
+func filterFileBySuffix(
+	path,
+	pattern string,
+) ([]os.FileInfo, error) {
+
+	entries, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, hierr.Errorf(err, "error read path %s", path)
+	}
+
+	var filtered []os.FileInfo
+
+	for _, entrie := range entries {
+		if strings.HasSuffix(entrie.Name(), pattern) {
+			filtered = append(filtered, entrie)
+		}
+	}
+
+	return filtered, nil
+}
 
 func copyFile(
 	srcFilename string,
@@ -22,11 +44,11 @@ func copyFile(
 
 	content, err := ioutil.ReadFile(srcFilename)
 	if err != nil {
-		return hierr.Errorf(err, "Can't read file %s", srcFilename)
+		return hierr.Errorf(err, "can't read file %s", srcFilename)
 	}
 	err = ioutil.WriteFile(dstFilename, content, 0644)
 	if err != nil {
-		return hierr.Errorf(err, "Can't write file %s", dstFilename)
+		return hierr.Errorf(err, "can't write file %s", dstFilename)
 	}
 	return nil
 }

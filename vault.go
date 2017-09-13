@@ -2,24 +2,21 @@ package main
 
 import (
 	"crypto/x509"
+	"fmt"
 	"strings"
 
 	api "github.com/hashicorp/vault/api"
 	hierr "github.com/reconquest/hierr-go"
 )
 
-func updateFromVault(
-	certificate string,
-	privateKey string,
-	suffixBac string,
+func certGetFromVault(
 	vaultAddress string,
 	mountPoint string,
 	tokenReadCert string,
 	certData *x509.Certificate,
-) error {
+) ([]byte, []byte, error) {
 
-	clientConfig := api.DefaultConfig()
-	client, _ := api.NewClient(clientConfig)
+	client, _ := api.NewClient(api.DefaultConfig())
 
 	client.SetAddress(vaultAddress)
 	client.SetToken(tokenReadCert)
@@ -30,9 +27,9 @@ func updateFromVault(
 		[]string{mountPoint, certData.Subject.CommonName}, "/"),
 	)
 	if err != nil || resp == nil {
-		return hierr.Errorf(
+		return nil, nil, hierr.Errorf(
 			err,
-			"Can't read certificate and key for %s from Vault",
+			"can't read certificate and key for %s from Vault",
 			certData.Subject.CommonName,
 		)
 	}
@@ -42,70 +39,16 @@ func updateFromVault(
 
 	err = checkCertKeyBlock(certPemData, keyPemData)
 	if err != nil {
-		return hierr.Errorf(err, "Can't check certificate and key from Vault")
+		return nil, nil, hierr.Errorf(err, "can't check certificate and key from Vault")
 	}
 
 	certDataNew, err := parseCert(certPemData)
 	if err != nil {
-		return hierr.Errorf(err, "Can't parse certificate from Vault")
+		return nil, nil, hierr.Errorf(err, "can't parse certificate from Vault")
 	}
 
-	if certDataNew.NotAfter.Unix() > certData.NotAfter.Unix() {
-
-		errNginx := nginxCheckReload()
-		if errNginx != nil {
-			return hierr.Errorf(errNginx,
-				"Failed nginx check before update certificate",
-			)
-		}
-
-		suffixBac := "backup"
-
-		certificateBac := strings.Join([]string{certificate, suffixBac}, ".")
-		privateKeyBac := strings.Join([]string{privateKey, suffixBac}, ".")
-
-		err = copyFile(certificate, certificateBac)
-		if err != nil {
-			return hierr.Errorf(err, "Can't copy file %s to %s",
-				certificate, certificateBac,
-			)
-		}
-		err = copyFile(privateKey, privateKeyBac)
-		if err != nil {
-			return hierr.Errorf(err, "Can't copy file %s to %s",
-				privateKey, privateKeyBac,
-			)
-		}
-
-		err = writeFile(certificate, certPemData)
-		if err != nil {
-			return hierr.Errorf(err, "Can't write file %s", certificate)
-		}
-		err = writeFile(privateKey, keyPemData)
-		if err != nil {
-			return hierr.Errorf(err, "Can't write file %s", privateKey)
-		}
-
-		errNginx = nginxCheckReload()
-		if errNginx != nil {
-
-			err = copyFile(certificateBac, certificate)
-			if err != nil {
-				return hierr.Errorf(err, "Can't copy file %s to %s",
-					certificateBac, certificate,
-				)
-			}
-			err = copyFile(privateKeyBac, privateKey)
-			if err != nil {
-				return hierr.Errorf(err, "Can't copy file %s to %s",
-					privateKeyBac, privateKey,
-				)
-			}
-
-			return errNginx
-		}
+	if certDataNew.NotAfter.Unix() <= certData.NotAfter.Unix() {
+		return nil, nil, fmt.Errorf("certificate not renewed")
 	}
-
-	return nil
-
+	return certPemData, keyPemData, nil
 }
