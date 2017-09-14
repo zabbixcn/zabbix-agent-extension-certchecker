@@ -9,7 +9,7 @@ import (
 	hierr "github.com/reconquest/hierr-go"
 )
 
-func certGetFromVault(
+func getCertFromVault(
 	vaultAddress string,
 	mountPoint string,
 	tokenReadCert string,

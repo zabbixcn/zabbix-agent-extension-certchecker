@@ -37,7 +37,7 @@ Certificate check and update options:
   -m --mountpoint <path>    Mount point of secret backend
                              [default: secret/prod/certs]
   -t --auth-token <token>   Access token for read secret backend
-  -v --vault-address <uri>  Address of the Vault server
+  -a --vault-address <uri>  Address of the Vault server
 	                         [default: http://localhost:8200].
   --suffix-bac <suffix>     Suffix for backup certificate/key file.
                              [default: backup].
@@ -145,7 +145,7 @@ Misc options:
 		os.Exit(0)
 	}
 
-	certPemData, keyPemData, err := certGetFromVault(
+	certPemData, keyPemData, err := getCertFromVault(
 		vaultAddress,
 		mountPoint,
 		tokenReadCert,
