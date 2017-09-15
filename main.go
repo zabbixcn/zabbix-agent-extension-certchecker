@@ -155,7 +155,7 @@ Misc options:
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	err = certUpdate(
+	err = updateCert(
 		certificate,
 		privateKey,
 		suffixBac,

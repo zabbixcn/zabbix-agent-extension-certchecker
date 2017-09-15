@@ -7,7 +7,7 @@ import (
 	hierr "github.com/reconquest/hierr-go"
 )
 
-func certUpdate(
+func updateCert(
 	certificate string,
 	privateKey string,
 	suffixBac string,
@@ -27,7 +27,7 @@ func certUpdate(
 	if certDataNew.NotAfter.Unix() <= certData.NotAfter.Unix() {
 		return nil
 	}
-	err = nginxCheck()
+	err = checkNginx()
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -65,7 +65,7 @@ func certUpdate(
 		return hierr.Errorf(err, "can't write file %s", privateKey)
 	}
 
-	err = nginxReload()
+	err = reloadNginx()
 	if err != nil {
 		return hierr.Errorf(
 			err,

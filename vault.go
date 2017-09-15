@@ -16,7 +16,10 @@ func getCertFromVault(
 	certData *x509.Certificate,
 ) ([]byte, []byte, error) {
 
-	client, _ := api.NewClient(api.DefaultConfig())
+	client, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		return nil, nil, hierr.Errorf(err, "can't create Vault client")
+	}
 
 	client.SetAddress(vaultAddress)
 	client.SetToken(tokenReadCert)
@@ -39,12 +42,18 @@ func getCertFromVault(
 
 	err = checkCertKeyBlock(certPemData, keyPemData)
 	if err != nil {
-		return nil, nil, hierr.Errorf(err, "can't check certificate and key from Vault")
+		return nil, nil, hierr.Errorf(
+			err,
+			"can't check certificate and key from Vault",
+		)
 	}
 
 	certDataNew, err := parseCert(certPemData)
 	if err != nil {
-		return nil, nil, hierr.Errorf(err, "can't parse certificate from Vault")
+		return nil, nil, hierr.Errorf(
+			err,
+			"can't parse certificate from Vault",
+		)
 	}
 
 	if certDataNew.NotAfter.Unix() <= certData.NotAfter.Unix() {
