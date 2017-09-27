@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>2.0</version>
-    <date>2017-09-01T10:12:30Z</date>
+    <date>2017-09-27T10:25:41Z</date>
     <groups>
         <group>
             <name>Team Zarplata Templates</name>
@@ -230,12 +230,12 @@
                             <logtimefmt/>
                         </item_prototype>
                         <item_prototype>
-                            <name>Certificate $3 stats</name>
+                            <name>Certificate {#COMMONNAME} stats</name>
                             <type>0</type>
                             <snmp_community/>
                             <multiplier>0</multiplier>
                             <snmp_oid/>
-                            <key>certificate.stats[{$ZABBIX_SERVER_IP},{#CERTIFICATE},{#COMMONNAME}]</key>
+                            <key>certificate.stats[{$ZABBIX_SERVER_IP},{#CERTIFICATE},{#PRIVATEKEY}]</key>
                             <delay>30</delay>
                             <history>90</history>
                             <trends>365</trends>
@@ -297,7 +297,12 @@
                     <host_prototypes/>
                 </discovery_rule>
             </discovery_rules>
-            <macros/>
+            <macros>
+                <macro>
+                    <macro>{$EXTENSION_NAME}</macro>
+                    <value>zabbix-agent-extension-certchecker</value>
+                </macro>
+            </macros>
             <templates/>
             <screens/>
         </template>
