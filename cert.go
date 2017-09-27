@@ -70,14 +70,3 @@ func checkCertKeyFile(certificate, privateKey string) error {
 	return nil
 
 }
-
-func checkCertKeyBlock(certPemData, keyPemData []byte) error {
-
-	_, err := tls.X509KeyPair(certPemData, keyPemData)
-	if err != nil {
-		return hierr.Errorf(err, "error load certificate and key blocks")
-	}
-
-	return nil
-
-}

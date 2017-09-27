@@ -26,21 +26,13 @@ Discovery options:
   --suffix-cert <crt>       Certificate file suffix [default: crt].
   --suffix-key <key>        Private key file suffix [default: key].
 
-Certificate check and update options:
+Certificate check options:
   -c --certificate <file>   Certificate file
   -k --private-key <file>   Private key file
-  -d --day <day>            Day expire [default: 30].
   -z --zabbix <host>        Hostname or IP address of zabbix server
                              [default: 127.0.0.1].
   -p --port <port>          Port of zabbix server [default: 10051].
   --zabbix-prefix <prefix>  Custom prefix for key [default: certificate].
-  -m --mountpoint <path>    Mount point of secret backend
-                             [default: secret/prod/certs]
-  -t --auth-token <token>   Access token for read secret backend
-  -a --vault-address <uri>  Address of the Vault server
-	                         [default: http://localhost:8200].
-  --suffix-bac <suffix>     Suffix for backup certificate/key file.
-                             [default: backup].
 
 Misc options:
   --help                    Show this screen.
@@ -73,22 +65,7 @@ Misc options:
 		fmt.Println("need setup --private-key <file>")
 		os.Exit(1)
 	}
-	day, err := strconv.Atoi(args["--day"].(string))
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	vaultAddress := args["--vault-address"].(string)
-	mountPoint := args["--mountpoint"].(string)
-	tokenReadCert, ok := args["--auth-token"].(string)
-	if !ok {
-		fmt.Println("need setup --auth-token <token>")
-		os.Exit(1)
-	}
-	suffixBac := args["--suffix-bac"].(string)
-
-	err = checkCertKeyFile(
+	err := checkCertKeyFile(
 		certificate,
 		privateKey,
 	)
@@ -96,7 +73,6 @@ Misc options:
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-
 	certData, err := parseCertFile(certificate)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -140,32 +116,5 @@ Misc options:
 	)
 	sender.Send(packet)
 
-	if remaining > int64(day*24*3600) {
-		fmt.Println("OK")
-		os.Exit(0)
-	}
-
-	certPemData, keyPemData, err := getCertFromVault(
-		vaultAddress,
-		mountPoint,
-		tokenReadCert,
-		certData,
-	)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	err = updateCert(
-		certificate,
-		privateKey,
-		suffixBac,
-		certPemData,
-		keyPemData,
-		certData,
-	)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
 	fmt.Println("OK")
 }
