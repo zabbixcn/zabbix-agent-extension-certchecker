@@ -46,6 +46,7 @@ func copyFile(
 	if err != nil {
 		return hierr.Errorf(err, "can't read file %s", srcFilename)
 	}
+
 	err = ioutil.WriteFile(dstFilename, content, 0644)
 	if err != nil {
 		return hierr.Errorf(err, "can't write file %s", dstFilename)
