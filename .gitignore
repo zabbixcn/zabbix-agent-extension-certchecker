@@ -1,1 +1,5 @@
-zabbix-agent-extension-certchecker
+.out/ 
+*.xz
+/src
+/pkg
+/zabbix-agent-extension-certchecker
