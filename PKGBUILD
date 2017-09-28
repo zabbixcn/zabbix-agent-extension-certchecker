@@ -31,7 +31,7 @@ pkgver() {
 build() {
     make_zabbix_config
 
-    cd "$srcdir/$pkgname"
+    cd "$pkgname"
     make 
 }
 
