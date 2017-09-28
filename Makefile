@@ -43,8 +43,8 @@ install:
 	cp ${CONFIG} /etc/zabbix/zabbix_agentd.conf.d/${CONFIG}
 	@echo Done
 
-remove:
-	@echo Remove
+uninstall:
+	@echo Uninstall
 	rm /usr/bin/${BINARYNAME}
 	rm /etc/zabbix/zabbix_agentd.conf.d/${CONFIG}
 	@echo Done
