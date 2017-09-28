@@ -1,6 +1,6 @@
 # zabbix-agent-extension-certchecker
 
-zabbix-agent-extension-certchecker - this extension for monitoring SSL certifiicate file expire.
+zabbix-agent-extension-certchecker - this extension for monitoring SSL certificate file expire.
 
 ### Supported features
 
@@ -43,7 +43,7 @@ pacman -U *.tar.xz
 
 ### Dependencies
 
-zabbix-agent-extension-elasticsearch requires [zabbix-agent](http://www.zabbix.com/download) v2.4+ to run.
+zabbix-agent-extension-certchecker requires [zabbix-agent](http://www.zabbix.com/download) v2.4+ to run.
 
 ### Zabbix configuration
 In order to start getting metrics, it is enough to import template and attach it to monitored node.
