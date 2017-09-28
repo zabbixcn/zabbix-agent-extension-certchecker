@@ -1,4 +1,4 @@
-#zabbix-agent-extension-certchecker
+# zabbix-agent-extension-certchecker
 
 zabbix-agent-extension-certchecker - this extension for monitoring SSL certifiicate file expire.
 
