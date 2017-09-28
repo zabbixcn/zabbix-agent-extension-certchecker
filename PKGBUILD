@@ -1,7 +1,7 @@
 # Maintainer: Andrey Kitsul <a.kitsul@zarplata.ru>
 
 pkgname=zabbix-agent-extension-certchecker
-pkgver=1
+pkgver=20170928.14_84a37b7
 pkgrel=1
 pkgdesc="Extension for zabbix-agentd for monitoring SSL certificate file"
 arch=('any')
